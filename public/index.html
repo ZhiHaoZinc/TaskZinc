@@ -1,164 +1,57 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Login + Firebase db</title>
-    <!-- Cool Google Fonts -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&display=swap" rel="stylesheet">
-    <!-- Our stylesheet -->
-    <link rel="stylesheet" type="text/css" href="index.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login/Register Toggle</title>
+  <style>
+    .container {
+      text-align: center;
+      margin-top: 100px;
+    }
+    .form-container {
+      display: none;
+    }
+    .form-container.active {
+      display: block;
+    }
+  </style>
 </head>
-
 <body>
-    <div id="content_container">
-        <div id="form_container">
-            <div id="form_header_container">
-                <h2 id="form_header"> Login + Firebase db </h2>
-            </div>
+  <div class="container">
+    <button onclick="toggleForm('login')">Login</button>
+    <button onclick="toggleForm('register')">Register</button>
+    <form id="loginForm" class="form-container">
+      <!-- Login form fields go here -->
+      <input type="text" placeholder="Username" />
+      <input type="password" placeholder="Password" />
+      <button type="submit">Login</button>
+    </form>
+    <form id="registerForm" class="form-container">
+      <!-- Register form fields go here -->
+      <input type="text" placeholder="Username" />
+      <input type="email" placeholder="Email" />
+      <input type="password" placeholder="Password" />
+      <input type="text" placeholder="Male or Female" />
+      <input type="number" placeholder="Contact Number" />
+      <input type="text" placeholder="Department" />
+      <button type="submit">Register</button>
+    </form>
+  </div>
 
-            <div id="form_content_container">
-                <div id="form_content_inner_container">
-                    <input type="text" id="name" placeholder="Full name">
-                    <input type="email" id="email" placeholder="Email">
-                    <input type="password" id="password" placeholder="New Password">
+  <script>
+    function toggleForm(formType) {
+      var loginForm = document.getElementById('loginForm');
+      var registerForm = document.getElementById('registerForm');
 
-                    <input type="text" id="contactno" placeholder="Contact Number">
-                    <input type="text" id="department" placeholder="Department">
-
-                    <div id="button_container">
-                        <button onclick="login()">Login</button>
-                        <button onclick="register()">Register</button>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
+      if (formType === 'login') {
+        loginForm.classList.add('active');
+        registerForm.classList.remove('active');
+      } else if (formType === 'register') {
+        registerForm.classList.add('active');
+        loginForm.classList.remove('active');
+      }
+    }
+  </script>
 </body>
-
-<script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-    import { getDatabase } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
-
-    // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    const firebaseConfig = {
-        apiKey: "AIzaSyA1K4jk1YUkByW7x6hIKcDxBy-ieRCwvq0",
-        authDomain: "taskzincdemo.firebaseapp.com",
-        databaseURL: "https://taskzincdemo-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "taskzincdemo",
-        storageBucket: "taskzincdemo.appspot.com",
-        messagingSenderId: "548108512084",
-        appId: "1:548108512084:web:a80337916eea71df8bb6c1",
-        measurementId: "G-QGKXP0MZ3V"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-
-    //Initialize DB and authentication
-    const database = getDatabase(app);
-    const auth = getAuth(app);
-
-    function register() {
-        // Get all our input fields
-        email = document.getElementById('email').value
-        password = document.getElementById('password').value
-        name = document.getElementById('name').value
-        contactno = document.getElementById('contactno').value
-        department = document.getElementById('department').value
-
-        // Validate input fields
-        if (validate_email(email) == false || validate_password(password) == false) {
-            alert('Email or Password is Outta Line!!')
-            return
-            // Don't continue running the code
-        }
-        if (validate_field(name) == false || validate_field(contactno) == false || validate_field(department) == false) {
-            alert('One or More Extra Fields is Outta Line!!')
-            return
-        }
-
-        // Move on with Auth
-        auth.createUserWithEmailAndPassword(email, password)
-            .then(function () {
-                // Declare user variable
-                var user = auth.currentUser
-
-                // Add this user to Firebase Database
-                var database_ref = database.ref()
-
-                // Create User data
-                var user_data = {
-                    email: email,
-                    name: name,
-                    contactno: contactno,
-                    department: department,
-                    status: "Active",
-                    last_login: Date.now()
-                }
-
-                // Push to Firebase Database
-                database_ref.child('users/' + user.uid).set(user_data)
-
-                // DOne
-                alert('User Created!!')
-            })
-            .catch(function (error) {
-                // Firebase will use this to alert of its errors
-                var error_code = error.code
-                var error_message = error.message
-
-                alert(error_message)
-            })
-    }
-    // Validate Functions
-    function validate_email(email) {
-        expression = /^[^@]+@\w+(\.\w+)+\w$/
-        if (expression.test(email) == true) {
-            // Email is good
-            return true
-        } else {
-            // Email is not good
-            return false
-        }
-    }
-
-    function validate_password(password) {
-        // Firebase only accepts lengths greater than 6
-        if (password < 6) {
-            return false
-        } else {
-            return true
-        }
-    }
-
-    function validate_field(field) {
-        if (field == null) {
-            return false
-        }
-
-        if (field.length <= 0) {
-            return false
-        } else {
-            return true
-        }
-    }
-
-</script>
-
-
 </html>
